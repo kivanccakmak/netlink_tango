@@ -5,6 +5,7 @@
 
 #include <net/if.h>
 #include <net/ethernet.h>
+#include <netinet/in.h>
 
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -17,9 +18,6 @@
 
 #include <errno.h>
 
-#include "mydefs.h"
-
-
 #define ADD_SIOC_FLAG(flags, type, str, num_flags, flags_out) \
     do { \
         if (flags & type) { \
@@ -28,6 +26,14 @@
         } \
     } while(0); \
 
+/**
+ * @brief 
+ *
+ * @param[in] ifname
+ * @param[out] ip_out
+ *
+ * @return 
+ */
 int get_iface_ip(const char *ifname, char *ip_out)
 {
     int ret, fd;
@@ -50,10 +56,19 @@ int get_iface_ip(const char *ifname, char *ip_out)
         return -1;
     }
 
-    snprintf(ip_out, MAX_IP_LEN, "%s", inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr));
+    snprintf(ip_out, INET_ADDRSTRLEN, "%s",
+            inet_ntoa(( (struct sockaddr_in *)&ifr.ifr_addr )->sin_addr));
     return 0;
 }
 
+/**
+ * @brief 
+ *
+ * @param[in] ifname
+ * @param[out] mac_out
+ *
+ * @return 
+ */
 int get_iface_mac(const char *ifname, char *mac_out)
 {
     struct ifreq ifr;

@@ -3,16 +3,19 @@ LD=ld
 
 default: all
 
-all: deps target
+all: deps utils target
 
 deps:
-	$(CC) -c handler.c
-	$(CC) -c myioctls.c
-	$(CC) -c main.c
+	$(CC) -c factory.c
+	$(CC) -c netlink.c
+
+utils:
+	$(CC) -c debug.c
+	$(CC) -c utils.c
 
 target:
-	$(LD) -r handler.o myioctls.o -o mylib.o
-	$(CC) main.o mylib.o -o main 
+	$(CC) -c main.c
+	@echo "maho"
 
 clean:
 	rm -rf *.o
