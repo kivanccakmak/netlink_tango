@@ -1,13 +1,13 @@
-# myfconfig
+# netlink tango
 
-User Space application to poll network interface information.  
+User Space application to poll network interface information.
 
 ## compile
 
-`cd src`
-`make`
+* `cd src`
+* `make`
 
 ## run
 
-`cd src`
-`./main`
+* `cd src`
+* `./main`
