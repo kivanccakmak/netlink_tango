@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
@@ -48,6 +51,28 @@ int msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg)
             break;
     }
     return 0;
+}
+
+int open_socket()
+{
+    int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    struct sockaddr_nl addr;
+
+    memset((void *)&addr, 0, sizeof(addr));
+
+    if (fd < 0) {
+        perror("socket() ");
+        return -1;
+    }
+
+    addr.nl_family = AF_NETLINK;
+    addr.nl_pid = getpid();
+    addr.nl_groups = RTMGRP_LINK|RTMGRP_IPV4_IFADDR;
+    if (bind(fd,(struct sockaddr *)&addr,sizeof(addr))<0) {
+        perror("bind() ");
+        return -1;
+    }
+    return fd;
 }
 
 static int netlink_link_state(struct sockaddr_nl *nl, struct nlmsghdr *msg)

@@ -20,28 +20,7 @@
 #include "myioctls.h"
 #include "handler.h"
 
-static int open_netlink()
-{
-    int fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-    struct sockaddr_nl addr;
-
-    memset((void *)&addr, 0, sizeof(addr));
-
-    if (fd < 0) {
-        perror("socket() ");
-        return -1;
-    }
-
-    addr.nl_family = AF_NETLINK;
-    addr.nl_pid = getpid();
-    addr.nl_groups = RTMGRP_LINK|RTMGRP_IPV4_IFADDR;
-    if (bind(fd,(struct sockaddr *)&addr,sizeof(addr))<0) {
-        perror("bind() ");
-        return -1;
-    }
-    return fd;
-}
-
+//TODO: move read_event to handler (or create one more layer)
 static int read_event(int fd, int (*msg_handler)(struct sockaddr_nl *,
                                                struct nlmsghdr *))
 {
@@ -100,15 +79,15 @@ static int read_event(int fd, int (*msg_handler)(struct sockaddr_nl *,
 
 int main(int argc, char *argv[])
 {
-    int nls = open_netlink();
+    int sock = open_socket();
 
     printf("Started watching:\n");
-    if (nls < 0) {
+    if (sock < 0) {
         printf("Open Error!");
     }
 
 	while (1) {
-		read_event(nls, msg_handler);
+		read_event(sock, msg_handler);
 	}
     return 0;
 }
