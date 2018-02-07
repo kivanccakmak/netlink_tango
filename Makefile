@@ -1,13 +1,19 @@
 CC=gcc
-SRC=netlink_test.c
-DEP=myioctls.c
-TARGET=netlink_test
+LD=ld
 
 default: all
 
-all: $(SRC) $(DEP)
-	$(CC) -Wall $(SRC) $(DEP) -o $(TARGET)
+all: deps target
+
+deps:
+	$(CC) -c handler.c
+	$(CC) -c myioctls.c
+	$(CC) -c main.c
+
+target:
+	$(LD) -r handler.o myioctls.o -o mylib.o
+	$(CC) main.o mylib.o -o main 
 
 clean:
-	rm -rf $(TARGET)
-
+	rm -rf *.o
+	rm -rf main
