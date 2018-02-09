@@ -30,19 +30,22 @@ static void init_iface_queue(struct queue *q)
     TAILQ_INIT(&(q->iface));
     for (i = 0; i < IFACE_LAST; i++) {
         int ret;
-        struct iface *iface;
+        struct iface *iface = NULL;
+        iface = (struct iface*) malloc(sizeof(struct iface));
         if ((ret = create_iface(i, iface))) {
             errorf("failed to create iface %d", i);
             sfree(iface);
             continue;
         }
-        iface = (struct iface *) malloc(sizeof(struct iface));
         TAILQ_INSERT_TAIL(&(q->iface), iface, tailq);
     }
 }
 
 static void run_iface_queue(struct queue *q)
 {
-    infof("running");
+    struct iface *p = NULL;
+    TAILQ_FOREACH(p, &q->iface, tailq) {
+        pthread_join(p->id, NULL);
+    }
     return;
 }

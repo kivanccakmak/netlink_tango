@@ -17,7 +17,6 @@
 #include "utils.h"
 #include "debug.h"
 
-static int netlink_init(void *ctx);
 static int netlink_handle(void *ctx);
 static int msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg);
 static int print_link_state(struct sockaddr_nl *nl, struct nlmsghdr *msg);
@@ -36,11 +35,8 @@ int netlink_create(void *ctx)
     struct sockaddr_nl addr;
     struct iface *iface = NULL;
 
-    ctx = (void *) malloc(sizeof(struct iface));
     iface = (struct iface*) ctx;
     memset((void *)&addr, 0, sizeof(addr));
-
-    debugf("creating iface");
 
     fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
     if (fd < 0) {
@@ -56,16 +52,17 @@ int netlink_create(void *ctx)
         return 1;
     }
     iface->fd = fd;
-    iface->init = &netlink_init;
     iface->handle = &netlink_handle;
     iface->remove = &netlink_remove;
-    infof("created");
     return 0;
 }
 
-static int netlink_init(void *ctx)
+void *netlink_init(void *ctx)
 {
-    return 0;
+    while (1) {
+        netlink_handle(ctx);
+    }
+    return NULL;
 }
 
 static int netlink_handle(void *ctx)
@@ -82,6 +79,7 @@ static int netlink_handle(void *ctx)
 
     iface = (struct iface*) ctx;
     fd = iface->fd;
+
     status = recvmsg(fd, &msg, 0);
 
     if(status < 0) {

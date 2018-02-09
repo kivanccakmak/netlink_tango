@@ -19,7 +19,7 @@ target:
 	$(CC) -c main.c
 	$(LD) -r factory.o debug.o utils.o -o mylib.o
 	$(LD) -r netlink.o mylib.o -o deps.o
-	$(CC) main.o deps.o -o main
+	$(CC) main.o deps.o -o main -lpthread -g
 
 clean:
 	rm -rf *.o
