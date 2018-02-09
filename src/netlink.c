@@ -23,6 +23,13 @@ static int msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg);
 static int print_link_state(struct sockaddr_nl *nl, struct nlmsghdr *msg);
 static int netlink_remove(void *ctx);
 
+/**
+ * @brief 
+ *
+ * @param[out] ctx
+ *
+ * @return 0 on succ, 1 on error
+ */
 int netlink_create(void *ctx)
 {
     int fd;
@@ -32,6 +39,8 @@ int netlink_create(void *ctx)
     ctx = (void *) malloc(sizeof(struct iface));
     iface = (struct iface*) ctx;
     memset((void *)&addr, 0, sizeof(addr));
+
+    debugf("creating iface");
 
     fd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
     if (fd < 0) {
@@ -50,6 +59,7 @@ int netlink_create(void *ctx)
     iface->init = &netlink_init;
     iface->handle = &netlink_handle;
     iface->remove = &netlink_remove;
+    infof("created");
     return 0;
 }
 

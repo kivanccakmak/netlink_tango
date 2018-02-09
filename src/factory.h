@@ -5,6 +5,8 @@
 #define CREATE_FAIL 1
 #define CREATE_NOT_FOUND 2
 
-int create_iface(int idx, void *ctx);
+#include "iface.h"
+
+int create_iface(int idx, struct iface *ctx);
 
 #endif

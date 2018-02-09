@@ -1,6 +1,16 @@
 #include "factory.h"
 #include "netlink.h"
 #include "iface.h"
+#include "debug.h"
+
+typedef struct {
+    int idx;
+    int (*create) (void *ctx);
+} creator_t;
+
+static const creator_t creators[] = {IFACE_NETLINK, &netlink_create};
+
+#define NUM_CREATORS sizeof(creators)/sizeof(creator_t)
 
 /**
  * @brief 
@@ -10,19 +20,9 @@
  *
  * @return 
  */
-int create_iface(int idx, void *ctx)
+int create_iface(int idx, struct iface *ctx)
 {
-    int ret = CREATE_NOT_FOUND;
-    switch (idx) {
-        case IFACE_NETLINK:
-            if (netlink_create(ctx)) {
-                ret = CREATE_FAIL;
-            } else {
-                ret = CREATE_SUCCESS;
-            }
-            break;
-        default:
-            break;
-    }
-    return ret;
+    if (idx > NUM_CREATORS-1 || idx < 0)
+        return CREATE_NOT_FOUND;
+    return creators[idx].create((void *) ctx);
 }
