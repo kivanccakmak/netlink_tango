@@ -6,12 +6,13 @@
 #include <pthread.h>
 
 typedef struct {
-    int idx;
     int (*create) (void *ctx);
-    void (*init) (void *ctx);
+    void* (*init) (void *ctx);
 } creator_t;
 
-static const creator_t creators[] = {IFACE_NETLINK, &netlink_create, &netlink_init};
+static creator_t creators[] = {
+    [IFACE_NETLINK] = {.create = netlink_create, .init = &netlink_init},
+};
 
 #define NUM_CREATORS sizeof(creators)/sizeof(creator_t)
 
@@ -31,6 +32,6 @@ int create_iface(int idx, struct iface *ctx)
     if (creators[idx].create((void *) ctx)) {
         return 1;
     }
-    creators[idx].init((void *) ctx);
+    pthread_create(&ctx->id, NULL, creators[idx].init, (void *) ctx);
     return 0;
 }
