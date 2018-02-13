@@ -22,6 +22,8 @@ static int msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg);
 static int print_link_state(struct sockaddr_nl *nl, struct nlmsghdr *msg);
 static int netlink_remove(void *ctx);
 
+//TODO: send netlink events to eventq
+
 /**
  * @brief 
  *

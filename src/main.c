@@ -1,30 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/queue.h>
+#include <unistd.h>
 
 #include "iface.h"
+#include "eventq.h"
 #include "factory.h"
 #include "utils.h"
 #include "debug.h"
 
 TAILQ_HEAD(ifaceq, iface);
-struct queue {
+struct if_queue {
     struct ifaceq iface;
 };
 
-static void init_iface_queue(struct queue *q);
-static void run_iface_queue(struct queue *q);
+static int init_iface_queue(struct if_queue *q);
 
 //TODO: add signal handler to main
 int main(int argc, char *argv[])
 {
-    struct queue q;
-    init_iface_queue(&q);
-    run_iface_queue(&q);
+    struct if_queue if_q;
+    struct ev_queue ev_q;
+    struct iface *p = NULL;
+
+    if (init_iface_queue(&if_q)) {
+        errorf("failed to init iface queue");
+        goto bail;
+    }
+
+    if (init_event_queue(&ev_q)) {
+        errorf("failed to init event queue");
+        goto bail;
+    }
+
+    TAILQ_FOREACH(p, &if_q.iface, tailq) {
+        pthread_join(p->id, NULL);
+    }
+
+    pthread_join(ev_q.id, NULL);
     return 0;
+bail:
+    return 1;
 }
 
-static void init_iface_queue(struct queue *q)
+static int init_iface_queue(struct if_queue *q)
 {
     int i;
     TAILQ_INIT(&(q->iface));
@@ -35,17 +54,12 @@ static void init_iface_queue(struct queue *q)
         if ((ret = create_iface(i, iface))) {
             errorf("failed to create iface %d", i);
             sfree(iface);
-            continue;
+            goto bail;
         }
         TAILQ_INSERT_TAIL(&(q->iface), iface, tailq);
     }
-}
-
-static void run_iface_queue(struct queue *q)
-{
-    struct iface *p = NULL;
-    TAILQ_FOREACH(p, &q->iface, tailq) {
-        pthread_join(p->id, NULL);
-    }
-    return;
+    return 0;
+    //TODO: release all re-sources
+bail:
+    return 1;
 }

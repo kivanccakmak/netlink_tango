@@ -3,11 +3,6 @@
 
 #include <stdio.h>
 
-/**
- * @author	alper akcan
- * @date	09.2016
- */
-
 #define PROGRAM_NAME "debug"
 
 #define _WHITE   "\033[37;1m"
@@ -57,7 +52,7 @@ enum debug_level {
 				__func__, __LINE__, ##__VA_ARGS__, __FILE__); \
 } while(0)
 
-enum debug_level debug_get_level (void);
-void debug_set_level (enum debug_level level);
-enum debug_level debug_level_from_string (const char *string);
+enum debug_level debug_get_level(void);
+void debug_set_level(enum debug_level level);
+enum debug_level debug_level_from_string(const char *string);
 #endif
