@@ -1,5 +1,6 @@
 .myscope
-main
+src/main
+src/core
 # Prerequisites
 *.d
 
