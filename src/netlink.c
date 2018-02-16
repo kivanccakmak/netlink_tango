@@ -16,13 +16,17 @@
 #include "iface.h"
 #include "utils.h"
 #include "debug.h"
+#include "eventq.h"
 
 static int netlink_handle(void *ctx);
-static int msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg);
+static int event_handler(void *ctx);
 static int print_link_state(struct sockaddr_nl *nl, struct nlmsghdr *msg);
 static int netlink_remove(void *ctx);
 
-//TODO: send netlink events to eventq
+struct event_ctx {
+    struct sockaddr_nl *nl;
+    struct nlmsghdr *msg;
+};
 
 /**
  * @brief 
@@ -78,6 +82,8 @@ static int netlink_handle(void *ctx)
     struct msghdr msg = { (void*)&snl, sizeof snl, &iov, 1, NULL, 0, 0};
     struct nlmsghdr *h;
     struct iface *iface = NULL;
+    struct event *e = NULL;
+    struct event_ctx *event_ctx = NULL;
 
     iface = (struct iface*) ctx;
     fd = iface->fd;
@@ -111,7 +117,14 @@ static int netlink_handle(void *ctx)
             return -1; // Error
         }
 
-        ret = msg_handler(&snl, h);
+        event_ctx = (struct event_ctx*) malloc(sizeof(struct event_ctx));
+        event_ctx->msg = h;
+        event_ctx->nl = &snl;
+
+        e = (struct event*) malloc(sizeof(struct event));
+        e->ctx = (void *) event_ctx;
+        e->handle = &event_handler;
+        push_event(e);
         if(ret < 0) {
             infof("read_netlink: Message hander error %d", ret);
             return ret;
@@ -121,8 +134,16 @@ static int netlink_handle(void *ctx)
     return ret;
 }
 
-static int msg_handler(struct sockaddr_nl *nl, struct nlmsghdr *msg)
+static int event_handler(void *ctx)
 {
+    struct event_ctx *event_ctx = NULL;
+    struct sockaddr_nl *nl = NULL;
+    struct nlmsghdr *msg = NULL;
+
+    event_ctx = (struct event_ctx*) ctx;
+    nl = event_ctx->nl;
+    msg = event_ctx->msg;
+
     switch (msg->nlmsg_type)
     {
         case RTM_NEWADDR:

@@ -1,5 +1,6 @@
 #ifndef _UTILS_H
 #define _UTILS_H
+#include <stdlib.h>
 
 int get_iface_ip(const char *ifname, char *ip_out);
 int get_iface_mac(const char *ifname, char *mac_out);
